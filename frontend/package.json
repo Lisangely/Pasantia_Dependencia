@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "desktop": "electron electron/main.cjs",
+    "desktop": "powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/crear_ejecutable.ps1 && electron electron/main.cjs",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
