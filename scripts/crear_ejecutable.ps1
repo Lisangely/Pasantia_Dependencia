@@ -38,12 +38,12 @@ try {
     }
 
     $texto = [System.IO.File]::ReadAllText($launcher)
-    $coincidencia = [regex]::Match($texto, 'const string Raiz = @".*?";')
+    $coincidencia = [regex]::Match($texto, 'const string Raiz(?:Empotrada)? = @".*?";')
     if (-not $coincidencia.Success) {
         Write-Host "Launcher.cs no tiene la línea de la carpeta. No se creó el ejecutable."
         exit 0
     }
-    $linea = 'const string Raiz = @"' + $raiz + '";'
+    $linea = 'const string RaizEmpotrada = @"' + $raiz + '";'
     $cambiado = $texto.Remove($coincidencia.Index, $coincidencia.Length).Insert($coincidencia.Index, $linea)
 
     $temporal = Join-Path ([System.IO.Path]::GetTempPath()) ("LauncherFAU-" + [guid]::NewGuid().ToString("N") + ".cs")

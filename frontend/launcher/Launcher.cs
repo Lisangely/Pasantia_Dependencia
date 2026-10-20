@@ -10,8 +10,35 @@ using System.Windows.Forms;
 
 static class Programa
 {
-    const string Raiz = @"c:\Users\jesus\Documents\pasantia lis\Pasantia_Dependencia-main\Pasantia_Dependencia-main";
+    const string RaizEmpotrada = @"c:\Users\jesus\Documents\pasantia lis\Pasantia_Dependencia-main\Pasantia_Dependencia-main";
     const string BaseDatos = "biblioteca_fau";
+    static readonly string Raiz = ElegirRaiz();
+
+    static string ElegirRaiz()
+    {
+        try
+        {
+            string carpeta = AppDomain.CurrentDomain.BaseDirectory;
+            if (carpeta.EndsWith("\\") || carpeta.EndsWith("/"))
+            {
+                carpeta = carpeta.Substring(0, carpeta.Length - 1);
+            }
+            if (File.Exists(Path.Combine(carpeta, "mvnw.cmd")))
+            {
+                return carpeta;
+            }
+        }
+        catch
+        {
+        }
+        return RaizEmpotrada;
+    }
+
+    static bool EsWindows7()
+    {
+        Version version = Environment.OSVersion.Version;
+        return version.Major < 6 || (version.Major == 6 && version.Minor <= 1);
+    }
 
     [STAThread]
     static void Main()
@@ -38,12 +65,20 @@ static class Programa
                 try
                 {
                     var hechos = new List<string>();
+                    bool windows7 = EsWindows7();
                     string javaHome = BuscarJava();
-                    string npm = BuscarNpm();
+                    string npm = null;
+                    if (!windows7)
+                    {
+                        npm = BuscarNpm();
+                    }
                     string psql = BuscarPsql();
                     string clave = LeerClaveBase();
 
-                    PrepararInterfaz(npm, hechos, ventana, aviso);
+                    if (!windows7)
+                    {
+                        PrepararInterfaz(npm, hechos, ventana, aviso);
+                    }
                     PrepararBase(psql, clave, hechos, ventana, aviso);
 
                     if (hechos.Count > 0)
@@ -64,7 +99,14 @@ static class Programa
                     }
 
                     CambiarTexto(ventana, aviso, "Abriendo la ventana...");
-                    IniciarEscritorio(npm);
+                    if (windows7)
+                    {
+                        AbrirFirefox();
+                    }
+                    else
+                    {
+                        IniciarEscritorio(npm);
+                    }
                     ventana.BeginInvoke(new Action(ventana.Close));
                 }
                 catch (Exception error)
@@ -203,28 +245,77 @@ static class Programa
             return desdeEntorno;
         }
 
-        string carpeta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Java");
-        if (!Directory.Exists(carpeta))
+        string[] padres = new string[]
         {
-            throw new Exception("Falta Java. Instala un JDK y vuelve a abrir este acceso.");
-        }
-
-        string preferido = Path.Combine(carpeta, "jdk-22");
-        if (JavaValido(preferido))
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Eclipse Adoptium"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Java"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Zulu"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Eclipse Adoptium"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Java")
+        };
+        foreach (string padre in padres)
         {
-            return preferido;
-        }
-
-        foreach (string directorio in Directory.GetDirectories(carpeta))
-        {
-            string nombre = Path.GetFileName(directorio);
-            if (nombre.StartsWith("jdk", StringComparison.OrdinalIgnoreCase) && JavaValido(directorio))
+            string hallado = PrimerJdk(padre);
+            if (hallado != null)
             {
-                return directorio;
+                return hallado;
             }
         }
 
-        throw new Exception("Falta Java. Instala un JDK y vuelve a abrir este acceso.");
+        throw new Exception("Falta Java 17. En Windows 7 instala Temurin 17.0.4.1. Una versión más nueva de Java no arranca en ese sistema.");
+    }
+
+    static string PrimerJdk(string carpeta)
+    {
+        if (string.IsNullOrEmpty(carpeta) || !Directory.Exists(carpeta))
+        {
+            return null;
+        }
+        if (JavaValido(carpeta))
+        {
+            return carpeta;
+        }
+        string[] directorios = Directory.GetDirectories(carpeta);
+        for (int i = directorios.Length - 1; i >= 0; i--)
+        {
+            if (JavaValido(directorios[i]))
+            {
+                return directorios[i];
+            }
+        }
+        return null;
+    }
+
+    static void AbrirFirefox()
+    {
+        string firefox = BuscarFirefox();
+        if (firefox == null)
+        {
+            throw new Exception("En Windows 7 la biblioteca se abre con Firefox 115 ESR de 64 bits. Instálalo desde https://ftp.mozilla.org/pub/firefox/releases/ y elige la carpeta 115 más alta, después win64 y es-ES. Luego vuelve a abrir este acceso.");
+        }
+        var proceso = new ProcessStartInfo();
+        proceso.FileName = firefox;
+        proceso.Arguments = "-new-window http://127.0.0.1:8081/";
+        proceso.UseShellExecute = false;
+        Process.Start(proceso);
+    }
+
+    static string BuscarFirefox()
+    {
+        string[] candidatos = new string[]
+        {
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Mozilla Firefox", "firefox.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Mozilla Firefox", "firefox.exe")
+        };
+        foreach (string candidato in candidatos)
+        {
+            if (File.Exists(candidato))
+            {
+                return candidato;
+            }
+        }
+        return null;
     }
 
     static bool JavaValido(string carpeta)

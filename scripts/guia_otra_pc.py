@@ -20,7 +20,7 @@ def base():
     titulo = doc.add_heading("Biblioteca FAU — Correr el sistema en otra computadora", 0)
     titulo.alignment = WD_ALIGN_PARAGRAPH.LEFT
     nota = doc.add_paragraph(
-        "Guía desde cero para Windows 10 u 11. La computadora nueva no tiene Java, Node.js ni PostgreSQL. "
+        "Guía desde cero. En Windows 10 u 11 sigue los pasos 1 a 16. En Windows 7 sigue el paso 17: no usa Node.js ni Electron. "
         "Todos los comandos se escriben en PowerShell."
     )
     nota.runs[0].italic = True
@@ -220,6 +220,29 @@ def main():
     p(doc, "Vuelve a aplicar el esquema. No borra las tablas si ya existen, y crea el usuario admin si todavía no está:")
     comando(doc, '& "C:\\Program Files\\PostgreSQL\\16\\bin\\psql.exe" -U postgres -h localhost -p 5432 -d biblioteca_fau -f "src\\main\\resources\\db\\schema.sql"')
     p(doc, "Entra con admin y 123.")
+
+    titulo(doc, "17. Computadora con Windows 7")
+    p(doc, "Windows 7 tiene que ser de 64 bits, con Service Pack 1. No instales Node.js, ni Electron, ni PostgreSQL 16, ni el Java más nuevo: esos instaladores no arrancan en Windows 7. La ventana de la biblioteca se abre en Firefox 115 ESR. La API sirve esas páginas. El catálogo sigue en PostgreSQL.")
+    sub(doc, "Qué instalar")
+    bullets(doc, [
+        "Git, solo si el instalador de https://git-scm.com/download/win acepta Windows 7. Si no lo acepta, copia la carpeta del proyecto desde la otra computadora con una memoria USB. Tiene que incluir src\\main\\resources\\static, que es la ventana ya construida.",
+        ".NET Framework 4.8, desde el sitio de Microsoft, para que abra Biblioteca FAU.exe.",
+        "PostgreSQL 13 para Windows x64, puerto 5432. Anota la contraseña del usuario postgres. Si el instalador dice que el sistema no es compatible, usa PostgreSQL 10.23: https://get.enterprisedb.com/postgresql/postgresql-10.23-1-windows-x64.exe",
+        "Java Temurin 17.0.4.1, este archivo y no uno más nuevo: https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.4.1%2B1/OpenJDK17U-jdk_x64_windows_hotspot_17.0.4.1_1.msi",
+        "Firefox 115 ESR de 64 bits. Entra a https://ftp.mozilla.org/pub/firefox/releases/ , abre la carpeta 115 más alta que termine en esr, después win64 y es-ES, y ejecuta el instalador.",
+    ])
+    sub(doc, "Preparar la base")
+    p(doc, "Abre PowerShell. Si Windows 7 solo tiene la versión antigua, los comandos de abajo igual funcionan. Entra a la carpeta del proyecto, la que contiene mvnw.cmd.")
+    comando(doc, "cd $env:USERPROFILE\\Documents\\Pasantia_Dependencia")
+    p(doc, "Copia el ejemplo de configuración y cambia TU_CLAVE por la contraseña de postgres, igual que en el paso 8.")
+    comando(doc, "Copy-Item src\\main\\resources\\application.properties.example src\\main\\resources\\application.properties")
+    p(doc, "Crea la base y las tablas. Si PostgreSQL quedó en la versión 10, cambia 13 por 10 en la ruta.")
+    comando(doc, '& "C:\\Program Files\\PostgreSQL\\13\\bin\\psql.exe" -U postgres -h localhost -p 5432 -d postgres -c "CREATE DATABASE biblioteca_fau"')
+    comando(doc, '& "C:\\Program Files\\PostgreSQL\\13\\bin\\psql.exe" -U postgres -h localhost -p 5432 -d biblioteca_fau -f "src\\main\\resources\\db\\schema.sql"')
+    sub(doc, "Abrir el programa")
+    p(doc, "No ejecutes npm. Entra a la carpeta del proyecto y abre Biblioteca FAU.exe, o crea un acceso directo de ese archivo en el escritorio. El programa reconoce la carpeta donde está el exe, inicia PostgreSQL, arranca la API y abre Firefox en http://127.0.0.1:8081/ .")
+    p(doc, "Entra con el usuario admin y la clave 123. La primera vez la API puede tardar varios minutos porque descarga sus componentes. Hace falta internet en ese primer arranque.")
+    p(doc, "No copies solo el exe al escritorio. Si lo copias suelto, sigue buscando la carpeta de la computadora donde se compiló. El acceso directo sí sirve, porque el exe se queda dentro del proyecto.")
 
     SALIDA.parent.mkdir(parents=True, exist_ok=True)
     candidatos = [

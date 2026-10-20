@@ -1,4 +1,5 @@
 -- Esquema de la biblioteca FAU-UCV.
+-- Sirve en PostgreSQL 10 o posterior. En Windows 7 se usa PostgreSQL 13 o, si el instalador no arranca, PostgreSQL 10.
 -- Ejecutar contra la base biblioteca_fau:
 --   psql -U postgres -d biblioteca_fau -f schema.sql
 --
