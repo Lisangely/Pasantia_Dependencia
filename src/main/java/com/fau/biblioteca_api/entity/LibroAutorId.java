@@ -11,6 +11,11 @@ public class LibroAutorId implements Serializable {
     public LibroAutorId() {
     }
 
+    public LibroAutorId(Integer libro, Integer autor) {
+        this.libro = libro;
+        this.autor = autor;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

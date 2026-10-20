@@ -1,9 +1,14 @@
 spring.application.name=biblioteca-api
+server.port=8081
 
 spring.datasource.url=jdbc:postgresql://localhost:5432/biblioteca_fau
 spring.datasource.username=postgres
-spring.datasource.password=Lisa0408.
+spring.datasource.password=TU_CLAVE
 
 spring.jpa.hibernate.ddl-auto=none
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
+
+server.error.include-message=always
+spring.servlet.multipart.max-file-size=25MB
+spring.servlet.multipart.max-request-size=25MB

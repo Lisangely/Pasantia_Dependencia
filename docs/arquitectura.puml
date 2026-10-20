@@ -1,0 +1,55 @@
+@startuml arquitectura-biblioteca-fau
+title Arquitectura de la Biblioteca FAU
+
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+actor "Personal" as persona
+
+package "Escritorio Windows" {
+  [Biblioteca FAU.exe\nLanzador] as exe
+  [Electron\nVentana de escritorio] as electron
+  [React + Vite\n127.0.0.1:5173] as ui
+}
+
+package "API Spring Boot\nlocalhost:8081" {
+  [Sesión y seguridad\nlogin, recuperación, roles] as auth
+  [Permisos\nadministrador o flags del ayudante] as permisos
+  [Catálogo\nlibros, autores, editoriales,\nubicaciones, ejemplares] as catalogo
+  [Circulación\nlectores, préstamos, devoluciones] as circulacion
+  [Incidencias y auditoría] as traza
+  [JPA / Hibernate] as jpa
+}
+
+database "PostgreSQL 16\nbiblioteca_fau" as db
+
+persona --> exe : un clic
+exe --> electron : abre la ventana\nsi falta Java, Node, PostgreSQL\no la base, lo prepara y avisa
+electron --> ui
+ui --> auth : /api\ncookie de sesión
+auth --> permisos
+permisos --> catalogo
+permisos --> circulacion
+permisos --> traza
+catalogo --> jpa
+circulacion --> jpa
+traza --> jpa
+auth --> jpa
+jpa --> db
+
+note right of auth
+  El administrador entra con usuario
+  y contraseña. Puede reestablecer
+  la suya con tres preguntas.
+  La contraseña de un ayudante
+  solo la cambia el administrador.
+end note
+
+note bottom of permisos
+  Crear usuarios es exclusivo
+  del administrador.
+  El perfil es ayudante o administrador.
+end note
+
+@enduml

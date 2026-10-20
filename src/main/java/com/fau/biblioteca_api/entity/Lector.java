@@ -26,6 +26,10 @@ public class Lector {
 
     private String telefono;
 
+    private String semestre;
+
+    private String carrera;
+
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
 
@@ -78,6 +82,22 @@ public class Lector {
 
     public void setTelefono(String telefono) {
         this.telefono = telefono;
+    }
+
+    public String getSemestre() {
+        return semestre;
+    }
+
+    public void setSemestre(String semestre) {
+        this.semestre = semestre;
+    }
+
+    public String getCarrera() {
+        return carrera;
+    }
+
+    public void setCarrera(String carrera) {
+        this.carrera = carrera;
     }
 
     public LocalDateTime getFechaRegistro() {

@@ -1,0 +1,164 @@
+@startuml entidad-relacion-biblioteca-fau
+title Mapa entidad-relación actualizado de la Biblioteca FAU
+footer Actualizado sobre el mapa original. Los campos nuevos están marcados con +.
+
+skinparam shadowing false
+skinparam linetype ortho
+hide circle
+
+entity "Editorial" as editorial {
+  * id_editorial : INT <<PK>>
+  --
+  * nombre : VARCHAR(255)
+}
+
+entity "Libro_Autor" as libro_autor {
+  * id_libro : INT <<PK, FK>>
+  * id_autor : INT <<PK, FK>>
+}
+
+entity "Libro" as libro {
+  * id_libro : INT <<PK>>
+  --
+  * titulo : VARCHAR(500)
+  tipo : VARCHAR(100)
+  fecha_publicacion : SMALLINT
+  fecha_original : VARCHAR(50)
+  * requiere_revision_fecha : BOOLEAN
+  cota : VARCHAR(100)
+  observaciones : TEXT
+  id_editorial : INT <<FK>>
+}
+
+entity "Autor" as autor {
+  * id_autor : INT <<PK>>
+  --
+  * nombre : VARCHAR(150)
+  apellido : VARCHAR(150)
+  nombre_completo : VARCHAR(300)
+}
+
+entity "Ubicacion" as ubicacion {
+  * id_ubicacion : INT <<PK>>
+  --
+  * ubicacion_original : VARCHAR(100)
+  estanteria : VARCHAR(20)
+  posicion : VARCHAR(20)
+  * requiere_revision : BOOLEAN
+}
+
+entity "Lector" as lector {
+  * id_lector : INT <<PK>>
+  --
+  * nombre : VARCHAR(100)
+  * apellido : VARCHAR(100)
+  * cedula : VARCHAR(20) <<UK>>
+  * correo : VARCHAR(150)
+  * telefono : VARCHAR(30)
+  semestre : VARCHAR(20)
+  carrera : VARCHAR(150)
+  * fecha_registro : DATETIME
+}
+
+entity "Ejemplar" as ejemplar {
+  * id_ejemplar : INT <<PK>>
+  --
+  numero_ejemplar : INT
+  * disponible : BOOLEAN
+  * requiere_revision : BOOLEAN
+  * fecha_creacion : DATETIME
+  * id_libro : INT <<FK>>
+  id_ubicacion : INT <<FK>>
+}
+
+entity "Incidencia_data" as incidencia {
+  * id_incidencia : INT <<PK>>
+  --
+  * campo : VARCHAR(100)
+  valor_original : VARCHAR(255)
+  * descripcion : TEXT
+  * resuelto : BOOLEAN
+  * id_libro : INT <<FK>>
+}
+
+entity "Usuario" as usuario {
+  * id_usuario : INT <<PK>>
+  --
+  * nombre : VARCHAR(100)
+  * apellido : VARCHAR(100)
+  * usuario : VARCHAR(50) <<UK>>
+  * correo : VARCHAR(150) <<UK>>
+  * password_hash : VARCHAR(255)
+  * rol : administrador | ayudante
+  * activo : BOOLEAN
+  * puede_eliminar : BOOLEAN
+  * puede_actualizar : BOOLEAN
+  * puede_crear : BOOLEAN
+  * puede_crear_libros : BOOLEAN
+  * puede_crear_autores : BOOLEAN
+  * puede_crear_editoriales : BOOLEAN
+  * puede_crear_ubicaciones : BOOLEAN
+  * puede_crear_ejemplares : BOOLEAN
+  * puede_crear_lectores : BOOLEAN
+  * puede_crear_prestamos : BOOLEAN
+  * puede_crear_incidencias : BOOLEAN
+  pregunta_1 : VARCHAR(200)
+  pregunta_2 : VARCHAR(200)
+  pregunta_3 : VARCHAR(200)
+  respuesta_1_hash : VARCHAR(255)
+  respuesta_2_hash : VARCHAR(255)
+  respuesta_3_hash : VARCHAR(255)
+}
+
+entity "Prestamo" as prestamo {
+  * id_prestamo : INT <<PK>>
+  --
+  * fecha_prestamo : DATETIME
+  fecha_devolucion_esperada : DATETIME
+  fecha_devolucion_real : DATETIME
+  * estado : prestado | devuelto | perdido
+  * id_ejemplar : INT <<FK>>
+  * id_lector : INT <<FK>>
+  * registrado_por : INT <<FK>>
+}
+
+entity "Auditoria" as auditoria {
+  * id_auditoria : INT <<PK>>
+  --
+  * fecha_evento : DATETIME
+  * entidad : VARCHAR(50)
+  * id_entidad : INT
+  * accion : ENUM
+  valor_anterior : TEXT
+  valor_nuevo : TEXT
+  observaciones : TEXT
+  id_usuario : INT <<FK>>
+}
+
+editorial ||--o{ libro : publica
+libro ||--o{ libro_autor
+autor ||--o{ libro_autor : escribe
+libro ||--o{ ejemplar : posee
+ubicacion ||--o{ ejemplar : almacena
+ejemplar ||--o{ prestamo : corresponde_a
+lector ||--o{ prestamo : solicita
+usuario ||--o{ prestamo : registra
+libro ||--o{ incidencia : genera
+usuario ||--o{ auditoria : realiza
+
+note bottom of usuario
+  Respecto al mapa original:
+  el rol pasó de bibliotecaria a
+  administrador o ayudante.
+  Se agregaron los permisos y
+  las tres preguntas de seguridad.
+end note
+
+note bottom of lector
+  Respecto al mapa original:
+  cédula, correo y teléfono
+  son obligatorios.
+  Semestre y carrera son opcionales.
+end note
+
+@enduml

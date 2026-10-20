@@ -13,28 +13,32 @@ public class EjemplarController {
 
     private final EjemplarService ejemplarService;
 
-    public EjemplarController(
-            EjemplarService ejemplarService) {
-
+    public EjemplarController(EjemplarService ejemplarService) {
         this.ejemplarService = ejemplarService;
     }
 
     @GetMapping
-    public List<Ejemplar> listar() {
-        return ejemplarService.listar();
+    public List<Ejemplar> listar(
+            @RequestParam(required = false) Integer idLibro) {
+
+        return ejemplarService.listar(idLibro);
     }
 
     @GetMapping("/{id}")
-    public Ejemplar obtener(
-            @PathVariable Integer id) {
-
+    public Ejemplar obtener(@PathVariable Integer id) {
         return ejemplarService.obtener(id);
     }
 
     @PostMapping
-    public Ejemplar crear(
+    public Ejemplar crear(@RequestBody EjemplarRequest request) {
+        return ejemplarService.crear(request);
+    }
+
+    @PutMapping("/{id}")
+    public Ejemplar actualizar(
+            @PathVariable Integer id,
             @RequestBody EjemplarRequest request) {
 
-        return ejemplarService.crear(request);
+        return ejemplarService.actualizar(id, request);
     }
 }

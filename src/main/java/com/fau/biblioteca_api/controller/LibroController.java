@@ -1,67 +1,73 @@
-package com.fau.biblioteca_api.service;
+package com.fau.biblioteca_api.controller;
 
+import com.fau.biblioteca_api.dto.ImportacionResultado;
 import com.fau.biblioteca_api.dto.LibroRequest;
-import com.fau.biblioteca_api.entity.Editorial;
 import com.fau.biblioteca_api.entity.Libro;
-import com.fau.biblioteca_api.repository.EditorialRepository;
-import com.fau.biblioteca_api.repository.LibroRepository;
-import org.springframework.stereotype.Service;
+import com.fau.biblioteca_api.service.ImportacionExcelService;
+import com.fau.biblioteca_api.service.LibroService;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@Service
-public class LibroService {
+@RestController
+@RequestMapping("/api/libros")
+public class LibroController {
 
-    private final LibroRepository libroRepository;
-    private final EditorialRepository editorialRepository;
+    private final LibroService libroService;
+    private final ImportacionExcelService importacionExcelService;
 
-    public LibroService(
-            LibroRepository libroRepository,
-            EditorialRepository editorialRepository) {
-
-        this.libroRepository = libroRepository;
-        this.editorialRepository = editorialRepository;
+    public LibroController(LibroService libroService, ImportacionExcelService importacionExcelService) {
+        this.libroService = libroService;
+        this.importacionExcelService = importacionExcelService;
     }
 
+    @PostMapping("/importar")
+    public ImportacionResultado importar(@RequestParam("archivo") MultipartFile archivo) {
+        return importacionExcelService.importar(archivo);
+    }
+
+    @GetMapping
     public List<Libro> listar() {
-        return libroRepository.findAll();
+        return libroService.listar();
     }
 
-    public Libro obtener(Integer id) {
+    @GetMapping("/buscar")
+    public List<Libro> buscar(
+            @RequestParam(required = false) String titulo,
+            @RequestParam(required = false) String autor,
+            @RequestParam(required = false) String cota,
+            @RequestParam(required = false) String tipo) {
 
-        return libroRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Libro no encontrado"));
+        return libroService.buscar(titulo, autor, cota, tipo);
     }
 
-    public Libro crear(LibroRequest request) {
+    @GetMapping("/{id}")
+    public Libro obtener(@PathVariable Integer id) {
+        return libroService.obtener(id);
+    }
 
-        Libro libro = new Libro();
+    @PostMapping
+    public Libro crear(@RequestBody LibroRequest request) {
+        return libroService.crear(request);
+    }
 
-        libro.setTitulo(request.getTitulo());
-        libro.setTipo(request.getTipo());
-        libro.setFechaPublicacion(
-                request.getFechaPublicacion());
-        libro.setFechaOriginal(
-                request.getFechaOriginal());
-        libro.setRequiereRevisionFecha(
-                request.getRequiereRevisionFecha());
-        libro.setCota(request.getCota());
-        libro.setObservaciones(
-                request.getObservaciones());
+    @PostMapping("/{id}/restaurar")
+    public Libro restaurar(@PathVariable Integer id, @RequestParam Integer idAuditoria) {
+        return libroService.restaurar(id, idAuditoria);
+    }
 
-        if (request.getIdEditorial() != null) {
+    @PutMapping("/{id}")
+    public Libro actualizar(
+            @PathVariable Integer id,
+            @RequestBody LibroRequest request) {
 
-            Editorial editorial =
-                    editorialRepository.findById(
-                            request.getIdEditorial())
-                    .orElseThrow(() ->
-                            new RuntimeException(
-                                    "Editorial no encontrada"));
+        return libroService.actualizar(id, request);
+    }
 
-            libro.setEditorial(editorial);
-        }
-
-        return libroRepository.save(libro);
+    @DeleteMapping("/{id}")
+    public String eliminar(@PathVariable Integer id) {
+        libroService.eliminar(id);
+        return "Libro eliminado correctamente";
     }
 }

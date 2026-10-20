@@ -11,7 +11,13 @@ public class Autor {
     @Column(name = "id_autor")
     private Integer idAutor;
 
-    @Column(name = "nombre_completo", nullable = false)
+    @Column(nullable = false, length = 150)
+    private String nombre;
+
+    @Column(length = 150)
+    private String apellido;
+
+    @Column(name = "nombre_completo", length = 300)
     private String nombreCompleto;
 
     public Autor() {
@@ -23,6 +29,22 @@ public class Autor {
 
     public void setIdAutor(Integer idAutor) {
         this.idAutor = idAutor;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
     }
 
     public String getNombreCompleto() {

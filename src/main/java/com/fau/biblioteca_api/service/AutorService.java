@@ -27,6 +27,7 @@ public class AutorService {
     }
 
     public Autor guardar(Autor autor) {
+        normalizar(autor);
         return autorRepository.save(autor);
     }
 
@@ -38,10 +39,35 @@ public class AutorService {
                 .orElseThrow(() ->
                         new RuntimeException("Autor no encontrado"));
 
-        autor.setNombreCompleto(
-                autorActualizado.getNombreCompleto());
+        autor.setNombre(autorActualizado.getNombre());
+        autor.setApellido(autorActualizado.getApellido());
+        autor.setNombreCompleto(autorActualizado.getNombreCompleto());
+        normalizar(autor);
 
         return autorRepository.save(autor);
+    }
+
+    private void normalizar(Autor autor) {
+        if (esBlanco(autor.getNombre()) && !esBlanco(autor.getNombreCompleto())) {
+            autor.setNombre(autor.getNombreCompleto().trim());
+        }
+        if (esBlanco(autor.getNombre())) {
+            throw new RuntimeException("El nombre del autor es obligatorio");
+        }
+        autor.setNombre(autor.getNombre().trim());
+        if (autor.getApellido() != null) {
+            autor.setApellido(autor.getApellido().trim());
+        }
+        if (esBlanco(autor.getNombreCompleto())) {
+            String apellido = esBlanco(autor.getApellido()) ? "" : " " + autor.getApellido();
+            autor.setNombreCompleto((autor.getNombre() + apellido).trim());
+        } else {
+            autor.setNombreCompleto(autor.getNombreCompleto().trim());
+        }
+    }
+
+    private boolean esBlanco(String valor) {
+        return valor == null || valor.isBlank();
     }
 
     public void eliminar(Integer id) {

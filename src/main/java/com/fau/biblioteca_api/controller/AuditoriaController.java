@@ -19,8 +19,13 @@ public class AuditoriaController {
     }
 
     @GetMapping
-    public List<Auditoria> listar() {
+    public List<Auditoria> listar(
+            @RequestParam(required = false) String entidad,
+            @RequestParam(required = false) Integer idEntidad) {
 
+        if (entidad != null && idEntidad != null) {
+            return auditoriaService.listarDe(entidad, idEntidad);
+        }
         return auditoriaService.listar();
     }
 

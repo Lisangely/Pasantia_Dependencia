@@ -22,6 +22,11 @@ public class AuditoriaService {
         return auditoriaRepository.findAll();
     }
 
+    public List<Auditoria> listarDe(String entidad, Integer idEntidad) {
+        return auditoriaRepository
+                .findByEntidadAndIdEntidadOrderByFechaEventoDesc(entidad, idEntidad);
+    }
+
     public Auditoria obtener(Integer id) {
 
         return auditoriaRepository.findById(id)
